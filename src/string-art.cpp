@@ -4,9 +4,9 @@
 
 int main(int argc, char *argv[])
 {
-    if (argc != 8)
+    if (argc != 10)
     {
-        std::fprintf(stderr, "Usage: string_art input.pgm num_pins opacity threshold skipped_neighbors scale_factor output.pgm\n");
+        std::fprintf(stderr, "Usage: string_art input.pgm num_pins opacity threshold skipped_neighbors scale_factor num_windings output.pgm windings.txt\n");
         return 0;
     }
     
@@ -72,13 +72,31 @@ int main(int argc, char *argv[])
     float draftOpacity = std::strtof(argv[3], nullptr);
     float threshold = std::strtof(argv[4], nullptr);
     int skippedNeighbors = std::strtol(argv[5], nullptr, 10);
-    int scaleFactor = std::strtol(argv[6], nullptr, 10);
-    std::FILE* outputFile = std::fopen(argv[7], "wb");
+    int numWindings = std::strtol(argv[6], nullptr, 10); 
+    int scaleFactor = std::strtol(argv[7], nullptr, 10);
+    std::FILE* outputFile = std::fopen(argv[8], "wb");
+    const char* windingsFileName = argv[9];
+
 
     // actual art being done
-    StringArtist stringArtist = StringArtist(image, numPins, draftOpacity, threshold, skippedNeighbors, scaleFactor);
+    StringArtist stringArtist = StringArtist(image, numPins, draftOpacity, threshold, skippedNeighbors, scaleFactor, numWindings);
     stringArtist.windString();
 
     // save final result
     stringArtist.saveImage(outputFile);
+
+    std::FILE* windingsFile = std::fopen(windingsFileName, "w");
+    if (windingsFile) {
+        std::vector<size_t> pinIndices = stringArtist.getIndices(); 
+        for (size_t i = 0; i < pinIndices.size(); ++i) {
+            std::fprintf(windingsFile, "%d", pinIndices[i]);
+            if (i < pinIndices.size() - 1) {
+                std::fprintf(windingsFile, "\n");
+            }
+        }
+        std::fclose(windingsFile);
+        std::fprintf(stderr, "Pin indices exported to windings.txt\n");
+    } else {
+        std::fprintf(stderr, "Error: Could not create windings.txt file\n");
+    }
 }

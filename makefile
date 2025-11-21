@@ -5,6 +5,9 @@ CXXFLAGS   = -std=c++17 \
              -Werror -Wpointer-arith -Wcast-qual \
              -Wno-missing-braces -Wempty-body -Wno-error=uninitialized \
              -Wno-error=deprecated-declarations \
+			 -Wno-error=unused-result \
+			 -Wno-error=format-security \
+			 -Wno-error=format \
              -pedantic-errors -pedantic \
              -O2  #-ggdb3 
 
