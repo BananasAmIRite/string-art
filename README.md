@@ -1,47 +1,70 @@
-# string-art
-A C++ implementation of an algorithm to generate photorealistic string art images. See my [blog post](https://gabrieleballetti.github.io/posts/2022-07-29-string-art/) for details and more examples.
+# String Art Generator
 
- Algorithm animation |  Final result
-:-------------------------:|:-------------------------:
-![animation](img/ada.gif) |  ![alt text](img/ada_s1.png)
+A comprehensive C++ string art generator with Arduino automation and analysis tools.
+
+## Overview
+
+This project generates string art from images and provides complete automation tools for physical string art creation using an Arduino-controlled machine.
+
+# Python Tools
+
+-   **generate.py**: Compiles the C++ code and generates Arduino instructions
+-   **send_commands.py**: Sends serial commands to the Arduino stringer
+-   **analyze_pegs.py**: Analyzes peg usage patterns and generates frequency plots
 
 ## Usage
 
-To compile simply run `make`.
+### Compilation
 
-The script can be run as
-
-```
-string_art input.pgm num_pins opacity threshold skipped_neighbors output.pgm
+```bash
+make
 ```
 
-where
- - `input.pgm` is a square binary “P5” portable graymap image without comments (suggested `512x512`),
- - `num_pins` is the number of nails (suggested: `256`),
- - `opacity` is the opacity factor, see below (suggested: `0.2`, higher value means brighter image),
- - `threshold` is the opacity factor, see below (suggested: `255`, higher value means brighter image),
- - `skipped_neighbors` is how consecutive nails can be (suggested `32`),
- - `scale_factor` is the scaling factor of the output image (suggested: `8`),
- - `output` the output string-art image.
+### C++ String Art Generator
 
-The copy-paste-able version
-
-```
-string_art input.pgm 256 0.2 255 32 8 output.pgm
+```bash
+string-art input.pgm num_pins opacity threshold skipped_neighbors num_windings scale_factor output.pgm windings.txt
 ```
 
-I used [ImageMagick](https://imagemagick.org/index.php) to perform the conversions to/from .pmg format, it is as easy as
+**Parameters:**
 
+-   `input.pgm` - Square P5 portable graymap image (suggested: `512x512`)
+-   `num_pins` - Number of pegs around the circle (suggested: `200-300`)
+-   `opacity` - Line opacity factor (suggested: `0.2`, lower = darker lines)
+-   `threshold` - Scoring threshold (suggested: `255`)
+-   `skipped_neighbors` - Minimum distance between consecutive pegs (suggested: `20`)
+-   `num_windings` - Maximum number of string segments (suggested: `10000`)
+-   `scale_factor` - Output image scaling factor (suggested: `4`)
+-   `output.pgm` - Output string art image file
+-   `windings.txt` - windings output file
+
+### Python Workflow
+
+#### Generate String Art and Instructions
+
+```python
+python generate.py
 ```
-magick image.png image.pgm
+
+This script:
+
+1. Compiles the C++ code
+2. Converts input images to proper format (cropped, resized, grayscale)
+3. Runs the string art generator
+4. Creates Arduino instruction files
+
+#### Send Commands to Arduino
+
+```python
+python send_commands.py
 ```
 
-### Opacity and threshold
+Sends the generated instructions to the Arduino stringer via serial communication.
 
-Opacity and threshold affect the final black/white balance of the picture. Use the following image as a reference.
+#### Analyze Peg Usage
 
-![table](img/ada_table.png)
+```python
+python analyze_pegs.py
+```
 
-## Some results
-
-![results](img/aec.png)
+Generates frequency plots and statistics showing how often each peg was used.

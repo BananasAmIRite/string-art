@@ -51,6 +51,8 @@ def convert_pgm_to_png(pgm_path, png_path):
     """
     try:
         img = Image.open(pgm_path)
+        # # Flip horizontally
+        # img = img.transpose(Image.FLIP_LEFT_RIGHT)
         img.save(png_path, "PNG")
         print(f"Successfully converted '{pgm_path}' to '{png_path}'")
     except FileNotFoundError:
@@ -58,7 +60,7 @@ def convert_pgm_to_png(pgm_path, png_path):
     except Exception as e:
         print(f"An error occurred during conversion: {e}")
 
-def analyze_windings(windings_file="./bin/windings.txt"):
+def analyze_windings(windings_file="./bin/windings.txt", peg_analysis_file="./bin/peg_analysis.txt"):
     """
     Analyzes windings.txt to count peg occurrences and find the maximum.
     """
@@ -73,6 +75,10 @@ def analyze_windings(windings_file="./bin/windings.txt"):
         # Find the maximum occurrence
         max_occurrence = max(peg_counts.values())
         most_used_pegs = [peg for peg, count in peg_counts.items() if count == max_occurrence]
+
+        with open(peg_analysis_file, 'w') as f:
+            elems = sorted(peg_counts.items())
+            f.writelines([f"{elem[1]}\n" for elem in elems])
         
         print(f"Total windings: {len(pegs)}")
         print(f"Unique pegs used: {len(peg_counts)}")
@@ -88,11 +94,38 @@ def analyze_windings(windings_file="./bin/windings.txt"):
         print(f"An error occurred while analyzing windings: {e}")
         return None, None, None
 
-subprocess.run(["make"])
-convert_to_pgm("./bin/inputs/einstein.png", "./bin/input.pgm")
-subprocess.run(["./bin/string-art", "./bin/input.pgm",  "100" ,"0.2" ,"255", "0", "10000", "4", "./bin/output.pgm", "./bin/windings.txt"])
-# convert_pgm_to_png("./output-100-10000.pgm", "output-100-10000.png")
-convert_pgm_to_png("./bin/output.pgm", "./bin/output.png")
-analyze_windings()
-subprocess.run(['rm', '-rf', './bin/output.pgm'])
-subprocess.run(['rm', '-rf', './bin/input.pgm'])
+def create_instructions(windings_file="./bin/windings.txt", instructions_file="./bin/commands.txt"):
+    try:
+        with open(windings_file, 'r') as w_f, open(instructions_file, 'w') as i_f:
+            # Read all lines and convert to integers
+            pegs = [int(line.strip()) for line in w_f if line.strip().isdigit()]
+
+            is_first = True
+            for nail in pegs:
+                if is_first:
+                    i_f.write(f"G{nail}\n")
+                    is_first = False
+                else:
+                    i_f.write(f"D{nail}\n")
+        
+    except FileNotFoundError:
+        print(f"Error: Windings file not found at '{windings_file}'")
+    except Exception as e:
+        print(f"An error occurred creating winding instructions: {e}")
+
+if __name__ == "__main__":
+    #  compile script for latest version
+    subprocess.run(["make"])
+    # convert image to correct format
+    convert_to_pgm("./bin/inputs/dome.jpg", "./bin/input.pgm")
+    # run string art generation
+    subprocess.run(["./bin/string-art", "./bin/input.pgm",  "200" ,"0.2" ,"255", "20", "10000", "4", "./bin/output.pgm", "./bin/windings.txt"])
+    # convert output image back
+    convert_pgm_to_png("./bin/output.pgm", "./bin/output.png")
+    # run windings analysis
+    analyze_windings("./bin/windings.txt", "./bin/peg_analysis.txt")
+    # create instructions
+    create_instructions("./bin/windings.txt", "./bin/commands.txt")
+    # clean up intermediate files
+    subprocess.run(['rm', '-rf', './bin/output.pgm'])
+    subprocess.run(['rm', '-rf', './bin/input.pgm'])
