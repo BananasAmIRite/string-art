@@ -1,6 +1,7 @@
 from PIL import Image
 import subprocess
 from collections import Counter
+import sys
 
 def convert_to_pgm(input_path, output_path):
     """
@@ -114,18 +115,21 @@ def create_instructions(windings_file="./bin/windings.txt", instructions_file=".
         print(f"An error occurred creating winding instructions: {e}")
 
 if __name__ == "__main__":
+    fname = sys.argv[1]
+    outname = sys.argv[2] or 'output.png'
+    outcmdname = sys.argv[3] or 'commands.txt'
     #  compile script for latest version
     subprocess.run(["make"])
     # convert image to correct format
-    convert_to_pgm("./bin/inputs/dome.jpg", "./bin/input.pgm")
+    convert_to_pgm(f"./bin/inputs/{fname}", "./bin/input.pgm")
     # run string art generation
     subprocess.run(["./bin/string-art", "./bin/input.pgm",  "200" ,"0.2" ,"255", "20", "10000", "4", "./bin/output.pgm", "./bin/windings.txt"])
     # convert output image back
-    convert_pgm_to_png("./bin/output.pgm", "./bin/output.png")
+    convert_pgm_to_png("./bin/output.pgm", f"./bin/{outname}")
     # run windings analysis
     analyze_windings("./bin/windings.txt", "./bin/peg_analysis.txt")
     # create instructions
-    create_instructions("./bin/windings.txt", "./bin/commands.txt")
+    create_instructions("./bin/windings.txt", f"./bin/{outcmdname}")
     # clean up intermediate files
     subprocess.run(['rm', '-rf', './bin/output.pgm'])
     subprocess.run(['rm', '-rf', './bin/input.pgm'])
