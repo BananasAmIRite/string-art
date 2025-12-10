@@ -168,7 +168,7 @@ void moveBy(long pegNumber) {
 
 
 void extend() {
-  stepper1.move(THREADER_MICROSTEPS*200*0.4);
+  stepper1.move(THREADER_MICROSTEPS*200*0.22);
   stepper1.runToPosition();
 }
 

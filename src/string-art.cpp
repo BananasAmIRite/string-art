@@ -4,9 +4,9 @@
 
 int main(int argc, char *argv[])
 {
-    if (argc != 10)
+    if (argc != 11)
     {
-        std::fprintf(stderr, "Usage: string_art input.pgm num_pins opacity threshold skipped_neighbors scale_factor num_windings output.pgm windings.txt\n");
+        std::fprintf(stderr, "Usage: string_art input.pgm num_pins opacity threshold skipped_neighbors scale_factor num_windings output.pgm windings.txt method_number\n");
         return 0;
     }
     
@@ -76,10 +76,11 @@ int main(int argc, char *argv[])
     int scaleFactor = std::strtol(argv[7], nullptr, 10);
     std::FILE* outputFile = std::fopen(argv[8], "wb");
     const char* windingsFileName = argv[9];
+    int method = std::strtol(argv[10], nullptr, 10);
 
 
     // actual art being done
-    StringArtist stringArtist = StringArtist(image, numPins, draftOpacity, threshold, skippedNeighbors, scaleFactor, numWindings);
+    StringArtist stringArtist = StringArtist(image, numPins, draftOpacity, threshold, skippedNeighbors, scaleFactor, numWindings, method);
     stringArtist.windString();
 
     // save final result

@@ -8,7 +8,7 @@ namespace {
     float CANVAS_LINE_OPACITY = 1.0f;
 }
 
-StringArtist::StringArtist(const Image& image, unsigned int numPins, float draftOpacity, float threshold, unsigned int skipped_neighbors, unsigned int scaleFactor, unsigned int numWindings) :
+StringArtist::StringArtist(const Image& image, unsigned int numPins, float draftOpacity, float threshold, unsigned int skipped_neighbors, unsigned int scaleFactor, unsigned int numWindings, unsigned int method) :
     m_imagePtr(&image),
     m_numPins(numPins),
     m_draftOpacity(draftOpacity),
@@ -16,7 +16,8 @@ StringArtist::StringArtist(const Image& image, unsigned int numPins, float draft
     m_skippedNeighbors(skipped_neighbors),
     m_scaleFactor(scaleFactor),
     m_iteration(0), 
-    m_windings(numWindings)
+    m_windings(numWindings), 
+    m_method(method)
 {
     m_canvas = StringArtImage(m_imagePtr->size() * m_scaleFactor, m_numPins);
     m_draft = StringArtImage(m_imagePtr->size(), m_numPins);
@@ -98,21 +99,30 @@ float StringArtist::lineScore(const size_t currentPinId, const size_t nextPinId,
     for (const Point2D& pixel : BresenhamLineIterator(currentPin, nextPin))
     {
         float pixVal = m_imagePtr->getPixelValue(pixel); 
-        float draftVal = (255 - m_draft.getPixelValue(pixel)); 
+        float draftVal = m_draft.getPixelValue(pixel); 
 
         // std::cout << pixVal  << " " <<  draftVal << std::endl; 
 
         
         float n = 0.4; 
 
-        score += 
+        if (m_method == 0) {
+            score += pixVal + 255 - draftVal; 
+        } else if (m_method == 1) {
+            score += 255*((pow(easeInOut(pixVal / 255), n) + pow(easeInOut((255 - draftVal) / 255), n)));
+        } else if (m_method == 2) {
+            score += 255*((pow(easeInOut(pixVal / 255), 1) + 1 - pow(easeInOut((draftVal) / 255), 1)));
+        }
+
+        // score += 
         // absval; 
         // sqrt(draftVal) + sqrt(pixVal); 
         // pow(pixVal, n) + pow(draftVal, n); 
-        255*((pow(easeInOut(pixVal / 255), n) + pow(easeInOut(draftVal / 255), n)));
+        // 255*((pow(easeInOut(pixVal / 255), n) + 1 - pow(easeInOut((draftVal) / 255), n)));
+        // 255*((pow(easeInOut(pixVal / 255), n) + pow(easeInOut((255 - draftVal) / 255), n)));
         // sigmoidContrast(pixVal) + sigmoidContrast(draftVal); 
         // 255 * (pow(pixVal / 255, n) + pow(draftVal / 255, n));
-        // pixVal + draftVal;  
+        // pixVal + 255 - draftVal;  
         // pow(pixVal, n) + pow(draftVal, n); 
         // pow(draftVal, 2) + pow(pixVal, 2);
         // sqrt(draftVal + pixVal); 
